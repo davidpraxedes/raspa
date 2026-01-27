@@ -31,9 +31,13 @@ def create_payment():
         amount = data.get("amount")
 
         # Revert to simple Proxy behavior (User reported localhost JS worked)
-        # Ensure amount is a number (float), not string, not int if possible
+        # Ensure amount is a number. IF integer, send as int (9). If float, send as float (9.50)
         try:
-             amount = float(amount)
+             val = float(amount)
+             if val.is_integer():
+                 amount = int(val)
+             else:
+                 amount = val
         except:
              pass
 
@@ -49,12 +53,11 @@ def create_payment():
         }
         
         # 1. Create Transaction on WayMB (Standard Format Verified by User)
-        # Payload must match JS success: amount as number, phone as 9 digits string
+        # Payload must match JS success: amount as number (int 9), phone as 9 digits string
         
         headers = {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'User-Agent': 'Mozilla/5.0'
+            'Accept': 'application/json'
         }
 
         # Ensure phone is clean 9 digits string (if that's what user sends)

@@ -39,7 +39,6 @@ class WayMBService {
             ...this.credentials,
             amount: 9.00, // Force float
             method: data.method,
-            currency: "EUR",
             payer: data.payer
         };
 

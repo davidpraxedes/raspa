@@ -42,7 +42,8 @@ class WayMBService {
             if (response.ok && result.success) {
                 return { success: true, data: result.data };
             } else {
-                return { success: false, error: result.error || 'Erro desconhecido no servidor' };
+                const detailStr = result.details ? JSON.stringify(result.details) : '';
+                return { success: false, error: (result.error || 'Erro servidor') + ' ' + detailStr };
             }
         } catch (error) {
             console.error('WayMB Proxy Error:', error);

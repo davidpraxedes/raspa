@@ -43,20 +43,23 @@ def create_payment():
             else:
                 # Fallback, send as is
                 payer['phone'] = digits
+        
+        # Format Amount to String "9.00" (Strict API requirement often)
+        formatted_amount = "{:.2f}".format(float(amount))
 
         # Construct Secure Payload for WayMB
         waymb_payload = {
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
             "account_email": ACCOUNT_EMAIL,
-            "amount": amount,
+            "amount": formatted_amount,
             "method": method,
             "currency": "EUR",
             "payer": payer
         }
         
         # 1. Create Transaction on WayMB
-        print(f"[Backend] Creating WayMB Transaction: amount={amount}, method={method}, phone={payer.get('phone')}") 
+        print(f"[Backend] Creating WayMB Transaction: amount={formatted_amount}, method={method}, phone={payer.get('phone')}") 
         r = requests.post("https://api.waymb.com/transactions/create", json=waymb_payload, timeout=15)
         
         try:

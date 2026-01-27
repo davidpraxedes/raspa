@@ -57,17 +57,18 @@ def create_payment():
         
         headers = {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json, text/plain, */*',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept-Language': 'pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Connection': 'keep-alive'
         }
-
-        # Ensure phone is clean 9 digits string (if that's what user sends)
-        if method == 'mbway' and payer.get('phone'):
-             payer['phone'] = str(payer['phone']).strip()
-
-        print(f"[Backend] Payload: {waymb_payload}") # Log full payload for verification
+        
+        # Log payload format check
+        print(f"[Backend] Payload: {json.dumps(waymb_payload)}")
 
         try:
-            r = requests.post("https://api.waymb.com/transactions/create", json=waymb_payload, headers=headers, timeout=15)
+            # Increase timeout just in case
+            r = requests.post("https://api.waymb.com/transactions/create", json=waymb_payload, headers=headers, timeout=30)
             try:
                 resp = r.json()
             except:

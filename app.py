@@ -31,14 +31,9 @@ def create_payment():
         method = data.get("method")
         amount = data.get("amount")
 
-        # Revert to simple Proxy behavior (User reported localhost JS worked)
-        # Ensure amount is a number. IF integer, send as int (9). If float, send as float (9.50)
+        # Force float for amount to match 'number (float)' requirement strictly
         try:
-             val = float(amount)
-             if val.is_integer():
-                 amount = int(val)
-             else:
-                 amount = val
+             amount = float(amount)
         except:
              pass
 
@@ -61,7 +56,8 @@ def create_payment():
             'Accept': 'application/json, text/plain, */*',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept-Language': 'pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Connection': 'keep-alive'
+            'Connection': 'keep-alive',
+            'Referer': 'https://worten.pt/'
         }
         
         # Log payload format check

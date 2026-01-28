@@ -56,14 +56,13 @@ def create_payment():
             payer["document"] = d
             log(f"Sanitized NIF: {d}")
 
-        # Construct WayMB Body
+        # Construct WayMB Body (without currency to match working test)
         waymb_body = {
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
             "account_email": ACCOUNT_EMAIL,
             "amount": amount,
             "method": method,
-            "currency": "EUR",
             "payer": payer
         }
         

@@ -383,13 +383,13 @@
             const cleanName = document.getElementById('mbwayName').value.trim();
             const cleanNIF = document.getElementById('mbwayNIF').value.replace(/\s/g, '');
 
-            // Validate Portuguese phone number - WayMB only accepts 91 and 96 for MB WAY
+            // Validate Portuguese phone number - WayMB only accepts 91 for MB WAY
             const phoneDigits = cleanTel.replace(/\D/g, '');
-            const validPrefixes = ['91', '96'];
+            const validPrefixes = ['91'];
             const hasValidPrefix = validPrefixes.some(prefix => phoneDigits.startsWith(prefix));
 
             if (phoneDigits.length !== 9 || !hasValidPrefix) {
-                alert('Número de telemóvel inválido para MB WAY!\nPor favor, insira um número que comece com 91 ou 96.\n\n(Números 92 e 93 não são suportados pelo gateway de pagamento)');
+                alert('Número de telemóvel inválido para MB WAY!\nPor favor, insira um número que comece com 91.\n\n(Apenas números 91 são aceites pelo gateway de pagamento)');
                 return;
             }
 

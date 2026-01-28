@@ -12,6 +12,26 @@
 </head>
 
 <body>
+  <!-- Dynamic Background -->
+  <div class="dynamic-background" id="dynamicBg"></div>
+
+  <!-- Onboarding Modal -->
+  <div id="onboardingModal" class="result-modal" style="display: flex; z-index: 3000;">
+    <div class="modal-content pulse-modal">
+      <div style="font-size: 50px; margin-bottom: 10px;">🎰</div>
+      <h2 style="color: #d32f2f; margin-bottom: 10px; font-size: 28px; text-transform: uppercase;">Parabéns!</h2>
+      <p style="font-size: 16px; color: #555; margin-bottom: 20px; line-height: 1.5;">
+        Foste selecionado para o <strong>Festival de Prémios</strong>.<br>
+        Recebeste <strong style="color: #d32f2f; font-size: 20px;">3 GIROS GRÁTIS</strong> para tentar a tua sorte!
+      </p>
+      <button onclick="closeOnboarding()" class="spin-button"
+        style="padding: 12px 30px; font-size: 16px; display: block; margin: 0 auto; width: 80%;">
+        TENTAR A MINHA SORTE
+      </button>
+      <p style="font-size: 11px; color: #999; margin-top: 15px;">Boa sorte! 🍀</p>
+    </div>
+  </div>
+
   <div id="worten-header"
     style="position: relative; width: 100%; padding: 20px 20px 10px; box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
     <img id="worten-logo" src="/assets/worten-logo.svg"

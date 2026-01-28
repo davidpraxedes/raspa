@@ -453,6 +453,57 @@ window.closeLegal = () => {
 }
 
 // Close on outside click
+// --- Dynamic Background Logic ---
+const bgContainer = document.getElementById('dynamicBg');
+const icons = ['🎰', '🍀', '💎', '💰', '7️⃣', '🎲'];
+
+function spawnIcon() {
+    if (!bgContainer) return;
+    const icon = document.createElement('div');
+    icon.classList.add('floating-icon');
+    icon.innerText = icons[Math.floor(Math.random() * icons.length)];
+
+    // Random Position X
+    icon.style.left = Math.random() * 100 + 'vw';
+    // Random Size
+    const size = Math.floor(Math.random() * 30) + 15; // 15-45px
+    icon.style.fontSize = size + 'px';
+    // Random Duration
+    const duration = Math.floor(Math.random() * 10) + 10; // 10-20s
+    icon.style.animationDuration = duration + 's';
+
+    bgContainer.appendChild(icon);
+
+    // Cleanup
+    setTimeout(() => {
+        icon.remove();
+    }, duration * 1000);
+}
+
+// Spawn initial batch
+if (bgContainer) {
+    for (let i = 0; i < 15; i++) {
+        setTimeout(spawnIcon, Math.random() * 5000);
+    }
+    // Continuous spawn
+    setInterval(spawnIcon, 800);
+}
+
+});
+
+// --- Onboarding Modal Logic ---
+window.closeOnboarding = () => {
+    const modal = document.getElementById('onboardingModal');
+    if (modal) {
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 500);
+    }
+}
+// Trigger celebration on load (optional, maybe too much? let's stick to modal pop)
+
 window.onclick = function (event) {
     const modal = document.getElementById('legalModal');
     if (event.target == modal) {

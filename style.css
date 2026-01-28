@@ -324,10 +324,10 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     width: 90%;
     /* Responsive width */
-    max-width: 600px;
-    /* Increased size for better impact (was 400px) */
-    margin: 20px;
-    /* Safe margin from edges */
+    max-width: 450px;
+    /* Reduced size for better visual balance */
+    margin: 0 25px;
+    /* Proper safety margins on mobile side edges */
     transform: scale(1.1);
     /* Slightly larger initial presence */
 }

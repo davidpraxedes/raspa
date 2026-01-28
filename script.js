@@ -213,91 +213,99 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Spin Logic ---
-    if (spinBtn) {
-        spinBtn.addEventListener('click', async () => {
-            // Unlock Audio on interaction just in case
-            await AudioManager.unlock();
+    // --- Spin Logic (Refactored) ---
+    async function runSpin() {
+        // Unlock Audio (Silent attempt)
+        await AudioManager.unlock();
 
-            if (isSpinning || spinsLeft <= 0) return;
+        if (isSpinning || spinsLeft <= 0) return;
 
-            // Decrement Start
-            isSpinning = true;
-            spinBtn.disabled = true;
-            spinBtn.style.opacity = "0.5";
-            spinBtn.innerText = "A RODAR...";
+        // Decrement Start
+        isSpinning = true;
+        spinBtn.disabled = true;
+        spinBtn.style.opacity = "0.5";
+        spinBtn.innerText = "A RODAR...";
 
-            // LOGIC:
-            // if spinsLeft == 3 -> Loss (Index 1: Tenta de Novo)
-            // if spinsLeft == 2 -> Loss (Index 3: Tenta de Novo)
-            // if spinsLeft == 1 -> Win (Index 0: Voucher 500€) [LAST SPIN]
+        // LOGIC:
+        // if spinsLeft == 3 -> Loss (Index 1: Tenta de Novo)
+        // if spinsLeft == 2 -> Loss (Index 3: Tenta de Novo)
+        // if spinsLeft == 1 -> Win (Index 0: Voucher 500€) [LAST SPIN]
 
-            let winningGlobalIndex;
-            if (spinsLeft === 3) winningGlobalIndex = 1;      // First Loss
-            else if (spinsLeft === 2) winningGlobalIndex = 3; // Second Loss
-            else winningGlobalIndex = 0;                      // Final Win
+        let winningGlobalIndex;
+        if (spinsLeft === 3) winningGlobalIndex = 1;      // First Loss
+        else if (spinsLeft === 2) winningGlobalIndex = 3; // Second Loss
+        else winningGlobalIndex = 0;                      // Final Win
 
-            // Decrement counter immediately for UI feedback OR after spin?
-            // User asked "giro vai descendo", usually happens on action.
-            spinsLeft--;
-            spinsCounterDisplay.innerText = spinsLeft;
-            updateProgress();
+        // Decrement counter
+        spinsLeft--;
+        spinsCounterDisplay.innerText = spinsLeft;
+        updateProgress();
 
-            const minSpins = 5;
-            const winningSegment = segments[winningGlobalIndex];
+        const minSpins = 5;
+        const winningSegment = segments[winningGlobalIndex];
 
-            // Rotation Math
-            const centerAngle = winningGlobalIndex * 45 + 22.5;
-            let targetRotation = 360 - centerAngle;
-            const jitter = Math.floor(Math.random() * 20) - 10; // +/- 10deg
-            targetRotation += jitter;
+        // Rotation Math
+        const centerAngle = winningGlobalIndex * 45 + 22.5;
+        let targetRotation = 360 - centerAngle;
+        const jitter = Math.floor(Math.random() * 20) - 10; // +/- 10deg
+        targetRotation += jitter;
 
-            const spinadds = minSpins * 360;
-            const currentMod = currentRotation % 360;
-            let dist = targetRotation - currentMod;
-            if (dist < 0) dist += 360;
+        const spinadds = minSpins * 360;
+        const currentMod = currentRotation % 360;
+        let dist = targetRotation - currentMod;
+        if (dist < 0) dist += 360;
 
-            const totalDegree = spinadds + dist;
+        const totalDegree = spinadds + dist;
 
-            // Ticking Sound Logic
-            let lastAngle = currentRotation;
-            const step = 45;
-            function trackTicks() {
-                if (!isSpinning) return;
-                const style = window.getComputedStyle(wheel);
-                const matrix = new DOMMatrix(style.transform);
-                let angle = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
-                if (angle < 0) angle += 360;
+        // Ticking Sound Logic
+        let lastAngle = currentRotation;
+        const step = 45;
+        function trackTicks() {
+            if (!isSpinning) return;
+            const style = window.getComputedStyle(wheel);
+            const matrix = new DOMMatrix(style.transform);
+            let angle = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
+            if (angle < 0) angle += 360;
 
-                let delta = angle - (lastAngle % 360);
-                if (delta < -180) delta += 360;
-                if (delta > 180) delta -= 360;
+            let delta = angle - (lastAngle % 360);
+            if (delta < -180) delta += 360;
+            if (delta > 180) delta -= 360;
 
-                if (Math.abs(delta) > 0) {
-                    // Check segment crossing
-                    const currentSeg = Math.floor(angle / step);
-                    const lastSeg = Math.floor((lastAngle % 360) / step);
-                    if (currentSeg !== lastSeg) playTick();
-                }
-                lastAngle = angle;
-                requestAnimationFrame(trackTicks);
+            if (Math.abs(delta) > 0) {
+                // Check segment crossing
+                const currentSeg = Math.floor(angle / step);
+                const lastSeg = Math.floor((lastAngle % 360) / step);
+                if (currentSeg !== lastSeg) playTick();
             }
+            lastAngle = angle;
             requestAnimationFrame(trackTicks);
+        }
+        requestAnimationFrame(trackTicks);
 
-            currentRotation += totalDegree;
-            wheel.style.transform = `rotate(${currentRotation}deg)`;
+        currentRotation += totalDegree;
+        wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-            // Show Result
-            setTimeout(() => {
-                isSpinning = false;
-                spinBtn.disabled = false;
-                spinBtn.style.opacity = "1";
-                spinBtn.innerText = spinsLeft > 0 ? "RODA AGORA!" : "PRÉMIO DESBLOQUEADO!";
+        // Show Result
+        setTimeout(() => {
+            isSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.style.opacity = "1";
+            spinBtn.innerText = spinsLeft > 0 ? "RODA AGORA!" : "PRÉMIO DESBLOQUEADO!";
 
-                showResult(winningSegment);
-            }, 6500);
-        });
+            showResult(winningSegment);
+        }, 6500);
     }
+
+    if (spinBtn) {
+        spinBtn.addEventListener('click', runSpin);
+    }
+
+    // Global exposure for Modal Retry
+    window.retrySpin = () => {
+        const modal = document.getElementById('resultModal');
+        modal.classList.add('hidden');
+        runSpin();
+    };
 
     window.closeModal = () => {
         // If spinsLeft is 0, we found the prize. We might want to NOT allow closing
@@ -345,12 +353,17 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // Loss
             resultText.innerHTML = `Não foi desta vez.<br>Tens mais <strong>${spinsLeft}</strong> tentativas!`;
-            modalH2.innerText = "TENTA DE NOVO";
+            modalH2.innerText = "OH, QUE PENA...";
             modalH2.style.color = "#d32f2f";
 
             modalBtn.innerText = "RODA OUTRA VEZ";
             modalBtn.style.background = "#555";
             modalBtn.classList.remove("pulse-button");
+
+            // Auto Spin on Click
+            modalBtn.onclick = () => {
+                window.retrySpin();
+            };
         }
 
         resultModal.classList.remove('hidden');
@@ -490,62 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(spawnIcon, 800);
     }
     // --- Global Audio Unlock Logic (Main Page) ---
-    const createUnlockOverlay = () => {
-        if (localStorage.getItem('audioUnlocked') === 'true') {
-            // Context might still be suspended, try resume if exists
-            // But we don't have global reference easily here unless we attach to window or initAudio
-            // Just let user click Spin to init audio normally as fallback
-            return;
-        }
-
-        const overlay = document.createElement('div');
-        overlay.id = 'audio-unlock-overlay';
-        overlay.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px); animation: fadeIn 0.3s ease;
-        `;
-        overlay.innerHTML = `
-            <div style="background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 80%;">
-                <div style="font-size: 40px; margin-bottom: 20px;">🔊</div>
-                <h3 style="color: #333; margin-bottom: 10px; font-weight: 700; font-family:'Open Sans', sans-serif;">Ativar Som</h3>
-                <p style="color: #666; margin-bottom: 25px; font-size: 14px; font-family:'Open Sans', sans-serif;">Para a melhor experiência, ative o som da roleta.</p>
-                <button id="unlock-btn" style="
-                    background: #d32f2f; color: white; border: none; padding: 12px 30px;
-                    border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; font-family:'Open Sans', sans-serif;
-                ">ATIVAR AGORA</button>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-
-        document.getElementById('unlock-btn').addEventListener('click', () => {
-            // Init Audio Context Global
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (AudioContext) {
-                const ctx = new AudioContext();
-                ctx.resume().then(() => {
-                    // Play silent buffer
-                    const buffer = ctx.createBuffer(1, 1, 22050);
-                    const source = ctx.createBufferSource();
-                    source.buffer = buffer;
-                    source.connect(ctx.destination);
-                    source.start(0);
-
-                    localStorage.setItem('audioUnlocked', 'true');
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.remove(), 300);
-                });
-            } else {
-                overlay.remove();
-            }
-        });
-    };
-
-    // Check if we are on index (has wheel)
-    if (document.getElementById('wheel')) {
-        setTimeout(createUnlockOverlay, 1000);
-    }
+    // No longer using createUnlockOverlay, AudioManager.unlock() is called on first interaction.
 
 });
 

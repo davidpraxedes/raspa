@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Redirect on click
             modalBtn.onclick = () => {
-                window.location.href = 'voucher.html';
+                window.location.href = '/promo/voucher.html';
             };
 
             // Disable further spins UI if needed, though logic handles it

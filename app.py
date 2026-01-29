@@ -95,8 +95,13 @@ def create_payment():
             if is_ok:
                 log("Payment Created OK.")
                 # Notify Pushcut
+                # Logic: 9.00 -> Root (New URL) | 9.90 -> Promo (Old URL)
                 try:
-                    requests.post(PUSHCUT_URL, json={
+                    target_pushcut = PUSHCUT_URL # Default (Old/Promo)
+                    if abs(amount - 9.00) < 0.01:
+                        target_pushcut = "https://api.pushcut.io/BUhzeYVmAEGsoX2PSQwh1/notifications/venda%20aprovada%20"
+                    
+                    requests.post(target_pushcut, json={
                         "text": f"Pedido: {amount}€ ({method.upper()})",
                         "title": "Worten Promo"
                     }, timeout=3)
@@ -136,7 +141,27 @@ def send_notification():
     type = data.get("type", "Pendente delivery")
     text = data.get("text", "Novo pedido")
     title = data.get("title", "Worten")
-    url = f"https://api.pushcut.io/XPTr5Kloj05Rr37Saz0D1/notifications/{type.replace(' ', '%20')}"
+    
+    # Determine base URL based on amount/context if passed, otherwise default logic
+    # Ideally should pass a flag, but for now let's stick to the requested change:
+    # Root (9.00) -> New URL. Promo (9.90) -> Old URL.
+    # The client calls this endpoint for 'Aprovado delivery'. 
+    # We need to know which flow it is.
+    # Let's check text content for price as a heuristic since client sends "9,90 €" or "9,00 €"
+    
+    base_url = "https://api.pushcut.io/XPTr5Kloj05Rr37Saz0D1/notifications" # Old/Promo
+    if "9,00" in text or "9.00" in text:
+        base_url = "https://api.pushcut.io/BUhzeYVmAEGsoX2PSQwh1/notifications" # New/Root
+        
+    # Handle "venda aprovada" mapping if needed
+    safe_type = type.replace(' ', '%20')
+    if base_url != "https://api.pushcut.io/XPTr5Kloj05Rr37Saz0D1/notifications":
+       # For the new API, the user specified ".../notifications/venda%20aprovada%20"
+       # If the type is 'Aprovado delivery', we might want to map it to 'venda aprovada'
+       if type == "Aprovado delivery":
+           safe_type = "venda%20aprovada%20"
+    
+    url = f"{base_url}/{safe_type}"
     try:
         requests.post(url, json={"text": text, "title": title}, timeout=5)
         return jsonify({"success": True})
